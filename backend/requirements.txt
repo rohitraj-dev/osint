@@ -1,0 +1,7 @@
+motor
+pymongo
+fastapi
+uvicorn
+python-dotenv
+websockets
+requests
