@@ -136,3 +136,12 @@ body,
 .history-popup {
   font: 500 12px/1.5 system-ui, sans-serif;
 }
+
+
+@keyframes anomaly-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.anomaly-pulse {
+  animation: anomaly-pulse 1.5s ease-in-out infinite;
+}

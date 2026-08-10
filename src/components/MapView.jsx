@@ -2,6 +2,7 @@ import { useState } from 'react'
 import L from 'leaflet'
 import { MapContainer, TileLayer, WMSTileLayer } from 'react-leaflet'
 import AircraftLayer from './AircraftLayer.jsx'
+import AnomalyLayer from './AnomalyLayer.jsx'
 import HistoryLayer from './HistoryLayer.jsx'
 import ShipLayer from './ShipLayer.jsx'
 import TimelineControls from './TimelineControls.jsx'
@@ -51,6 +52,7 @@ function MapView() {
           <>
             <AircraftLayer />
             <ShipLayer />
+            <AnomalyLayer />
           </>
         )}
       </MapContainer>
