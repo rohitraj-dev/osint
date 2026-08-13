@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: osint-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: VITE_AISSTREAM_KEY
+        sync: false
