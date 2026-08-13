@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CircleMarker, Tooltip, useMap, useMapEvents } from 'react-leaflet'
 import { useOpenSkyStates } from '../hooks/useOpenSkyStates.js'
+import { checkProximity } from '../utils/proximityCheck.js'
 
 function formatAltitude(baroAltitude, geoAltitude) {
   const altitude = baroAltitude ?? geoAltitude
@@ -48,11 +49,17 @@ function AircraftBoundsTracker({ onBoundsChange }) {
   return null
 }
 
-function AircraftLayer() {
+function AircraftLayer({ zones }) {
   const map = useMap()
   const [bounds, setBounds] = useState(() => map.getBounds())
   const [now, setNow] = useState(Date.now())
-  const { aircraft, loading, error, lastUpdated } = useOpenSkyStates(bounds)
+  const { aircraft: rawAircraft, loading, error, lastUpdated } = useOpenSkyStates(bounds)
+
+  const aircraft = useMemo(() => {
+    if (!rawAircraft || !zones) return rawAircraft
+    const mapped = rawAircraft.map(a => ({ ...a, lat: a.latitude, lon: a.longitude }))
+    return checkProximity(mapped, zones)
+  }, [rawAircraft, zones])
 
   useEffect(() => {
     setBounds(map.getBounds())
@@ -96,6 +103,11 @@ function AircraftLayer() {
               <div>{formatAltitude(plane.baroAltitude, plane.geoAltitude)}</div>
               <div>{formatHeading(plane.trueTrack)}</div>
               <div>{formatVelocity(plane.velocity)}</div>
+              {plane.nearZone && (
+                <div style={{ color: '#f87171', marginTop: '4px', fontWeight: 'bold' }}>
+                  ⚠ {plane.zoneName} ({plane.distanceKm} km)
+                </div>
+              )}
             </div>
           </Tooltip>
         </CircleMarker>

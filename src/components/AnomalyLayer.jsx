@@ -1,11 +1,18 @@
 import { CircleMarker, Popup } from 'react-leaflet';
 
-const AnomalyLayer = ({ anomalies }) => {
+const AnomalyLayer = ({ anomalies, aircraft, vessels }) => {
   return (
     <>
       {anomalies.map((anomaly, index) => {
         const isAircraft = anomaly.type === 'aircraft';
         const color = isAircraft ? 'red' : 'orange';
+
+        // Check if this anomaly asset is flagged near a zone
+        const asset = isAircraft 
+          ? aircraft?.find(a => a.icao24 === anomaly.icao)
+          : vessels?.find(v => v.mmsi === anomaly.mmsi);
+        
+        const nearZone = asset?.nearZone;
 
         return (
           <CircleMarker
@@ -21,6 +28,11 @@ const AnomalyLayer = ({ anomalies }) => {
                 <strong>{isAircraft ? 'ICAO:' : 'MMSI:'}</strong> {anomaly.icao || anomaly.mmsi}<br />
                 <strong>Anomaly Score:</strong> {anomaly.anomaly_score}<br />
                 <strong>Timestamp:</strong> {new Date(anomaly.timestamp).toLocaleString()}
+                {nearZone && (
+                  <div style={{ marginTop: '5px', color: 'red', fontWeight: 'bold' }}>
+                    Near Sensitive Zone: {asset.zoneName} ({asset.distanceKm} km)
+                  </div>
+                )}
               </div>
             </Popup>
           </CircleMarker>

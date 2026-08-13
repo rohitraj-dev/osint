@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const GeminiPanel = ({ anomalies, isOpen, onClose }) => {
+const GeminiPanel = ({ anomalies, aircraft, vessels, isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState('');
   const [error, setError] = useState('');
@@ -15,7 +15,10 @@ const GeminiPanel = ({ anomalies, isOpen, onClose }) => {
     const apiKey = import.meta.env.VITE_GEMINI_KEY;
     const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
 
-    const prompt = `You are an OSINT domain awareness analyst. Summarise these flagged anomalies in 3-5 sentences, noting asset types, locations, and potential significance. Anomalies: ${JSON.stringify(anomalies, null, 2)}`;
+    const prompt = `You are an OSINT domain awareness analyst. Summarise these flagged anomalies in 3-5 sentences, noting asset types, locations, and potential significance. Some assets are flagged as near sensitive zones. Consider zone proximity in your analysis. 
+    Anomalies: ${JSON.stringify(anomalies, null, 2)}
+    Aircraft in area: ${JSON.stringify(aircraft?.filter(a => a.nearZone), null, 2)}
+    Vessels in area: ${JSON.stringify(vessels?.filter(v => v.nearZone), null, 2)}`;
 
     try {
       const response = await fetch(url, {

@@ -1,0 +1,105 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Port of Mumbai",
+        "type": "port",
+        "risk": "high"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [72.82, 18.92],
+            [72.88, 18.92],
+            [72.88, 18.96],
+            [72.82, 18.96],
+            [72.82, 18.92]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Heathrow Airport London",
+        "type": "airfield",
+        "risk": "medium"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-0.49, 51.45],
+            [-0.43, 51.45],
+            [-0.43, 51.48],
+            [-0.49, 51.48],
+            [-0.49, 51.45]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Port of Singapore",
+        "type": "port",
+        "risk": "high"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [103.75, 1.22],
+            [103.85, 1.22],
+            [103.85, 1.28],
+            [103.75, 1.28],
+            [103.75, 1.22]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Delhi IGI Airport",
+        "type": "airfield",
+        "risk": "medium"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [77.05, 28.53],
+            [77.12, 28.53],
+            [77.12, 28.58],
+            [77.05, 28.58],
+            [77.05, 28.53]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Strait of Hormuz chokepoint",
+        "type": "chokepoint",
+        "risk": "high"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [55.8, 26.3],
+            [56.5, 26.3],
+            [56.5, 26.8],
+            [55.8, 26.8],
+            [55.8, 26.3]
+          ]
+        ]
+      }
+    }
+  ]
+}
