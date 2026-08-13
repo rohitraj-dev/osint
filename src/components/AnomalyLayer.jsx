@@ -1,27 +1,6 @@
-import { useEffect, useState } from 'react';
 import { CircleMarker, Popup } from 'react-leaflet';
 
-const AnomalyLayer = () => {
-  const [anomalies, setAnomalies] = useState([]);
-
-  const fetchAnomalies = async () => {
-    try {
-      const response = await fetch('/api/backend/anomalies');
-      if (response.ok) {
-        const data = await response.json();
-        setAnomalies(data);
-      }
-    } catch (error) {
-      console.error('Error fetching anomalies:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchAnomalies();
-    const interval = setInterval(fetchAnomalies, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
+const AnomalyLayer = ({ anomalies }) => {
   return (
     <>
       {anomalies.map((anomaly, index) => {
