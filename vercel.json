@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/api/backend/(.*)", "destination": "https://osint-23z6.onrender.com/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
