@@ -16,7 +16,7 @@ body,
 
 .satellite-toggle {
   position: absolute;
-  top: 16px;
+  top: 70px;
   left: 16px;
   z-index: 1100;
   padding: 8px 12px;

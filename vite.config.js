@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/backend': {
-        target: 'http://localhost:8000',
+        target: 'https://osint-23z6.onrender.com',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/backend/, ''),
       },

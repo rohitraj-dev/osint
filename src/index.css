@@ -1,10 +1,26 @@
-html,
-body,
-#root,
-.map-view,
-.leaflet-container {
+:root {
+  --bg: #111418;
+  --surface: #1C2129;
+  --surface-el: #262D38;
+  --border: #384456;
+  --accent: #2994F0;
+  --accent-dim: rgba(41,148,240,0.15);
+  --danger: #EC4444;
+  --warn: #F59E23;
+  --ok: #33D48D;
+  --text-pri: #EDF2F7;
+  --text-sec: #879EB8;
+  --text-dim: #596E84;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root {
   width: 100vw;
   height: 100vh;
   margin: 0;
   padding: 0;
+  background: var(--bg);
+  color: var(--text-pri);
+  font-family: 'Inter', system-ui, sans-serif;
 }
