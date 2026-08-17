@@ -47,7 +47,7 @@ export function useOpenSkyStates(bounds) {
       setLoading(true)
 
       const url =
-        `/api/opensky/states/all?lamin=${bounds.getSouth()}` +
+        `https://opensky-network.org/api/states/all?lamin=${bounds.getSouth()}` +
         `&lomin=${bounds.getWest()}&lamax=${bounds.getNorth()}&lomax=${bounds.getEast()}`
 
       try {
