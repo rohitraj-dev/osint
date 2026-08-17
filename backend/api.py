@@ -138,9 +138,19 @@ async def proxy_opensky(lamin: float, lomin: float, lamax: float, lomax: float):
     import httpx
     url = 'https://opensky-network.org/api/states/all'
     params = {'lamin': lamin, 'lomin': lomin, 'lamax': lamax, 'lomax': lomax}
-    async with httpx.AsyncClient(timeout=15) as client:
-        r = await client.get(url, params=params)
-        return JSONResponse(content=r.json(), status_code=r.status_code)
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            r = await client.get(url, params=params)
+            if r.status_code == 200:
+                return JSONResponse(content=r.json(), status_code=200)
+            else:
+                return JSONResponse(content={'states': [], 'error': f'OpenSky returned {r.status_code}'}, status_code=200)
+    except httpx.ConnectTimeout:
+        return JSONResponse(content={'states': [], 'error': 'OpenSky connection timed out'}, status_code=200)
+    except httpx.TimeoutException:
+        return JSONResponse(content={'states': [], 'error': 'OpenSky request timed out'}, status_code=200)
+    except Exception as e:
+        return JSONResponse(content={'states': [], 'error': str(e)}, status_code=200)
 
 
 if __name__ == '__main__':
