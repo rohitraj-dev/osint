@@ -2,24 +2,23 @@ import { useEffect, useRef, useState } from 'react'
 
 const POLL_INTERVAL_MS = 20000
 
-function mapAircraftState(state) {
-  const longitude = state[5]
-  const latitude = state[6]
-
-  if (longitude == null || latitude == null) {
+function mapAircraftState(ac) {
+  if (ac.lon == null || ac.lat == null) {
     return null
   }
 
+  const baroAltitude = ac.alt_baro === 'ground' ? 0 : ac.alt_baro
+
   return {
-    icao24: state[0],
-    callsign: state[1]?.trim() ?? '',
-    longitude,
-    latitude,
-    baroAltitude: state[7],
-    onGround: Boolean(state[8]),
-    velocity: state[9],
-    trueTrack: state[10],
-    geoAltitude: state[13],
+    icao24: ac.hex,
+    callsign: ac.flight?.trim() ?? '',
+    longitude: ac.lon,
+    latitude: ac.lat,
+    baroAltitude,
+    onGround: ac.alt_baro === 'ground',
+    velocity: ac.gs,
+    trueTrack: ac.track,
+    geoAltitude: ac.alt_geom,
   }
 }
 
@@ -46,9 +45,11 @@ export function useOpenSkyStates(bounds) {
       abortRef.current = controller
       setLoading(true)
 
-      const url =
-        `https://opensky-network.org/api/states/all?lamin=${bounds.getSouth()}` +
-        `&lomin=${bounds.getWest()}&lamax=${bounds.getNorth()}&lomax=${bounds.getEast()}`
+      const lat = ((bounds.getNorth() + bounds.getSouth()) / 2).toFixed(4)
+      const lon = ((bounds.getEast() + bounds.getWest()) / 2).toFixed(4)
+      const dist = 250 // nautical miles, max allowed is 250
+
+      const url = `https://api.adsb.lol/v2/lat/${lat}/lon/${lon}/dist/${dist}`
 
       try {
         const response = await fetch(url, { signal: controller.signal })
@@ -58,7 +59,7 @@ export function useOpenSkyStates(bounds) {
         }
 
         const data = await response.json()
-        const nextAircraft = (data.states ?? [])
+        const nextAircraft = (data.ac ?? [])
           .map(mapAircraftState)
           .filter(Boolean)
 
