@@ -20,6 +20,8 @@ TIME_WINDOW = timedelta(minutes=5)
 
 load_dotenv(ENV_PATH)
 MONGO_URI = os.getenv('MONGO_URI')
+OPENSKY_USERNAME = os.environ.get('OPENSKY_USERNAME')
+OPENSKY_PASSWORD = os.environ.get('OPENSKY_PASSWORD')
 
 if not MONGO_URI:
     raise RuntimeError('MONGO_URI is not set in the project root .env file.')
@@ -138,8 +140,9 @@ async def proxy_opensky(lamin: float, lomin: float, lamax: float, lomax: float):
     import httpx
     url = 'https://opensky-network.org/api/states/all'
     params = {'lamin': lamin, 'lomin': lomin, 'lamax': lamax, 'lomax': lomax}
+    auth = (OPENSKY_USERNAME, OPENSKY_PASSWORD) if OPENSKY_USERNAME and OPENSKY_PASSWORD else None
     try:
-        async with httpx.AsyncClient(timeout=30) as client:
+        async with httpx.AsyncClient(timeout=30, auth=auth) as client:
             r = await client.get(url, params=params)
             if r.status_code == 200:
                 return JSONResponse(content=r.json(), status_code=200)
