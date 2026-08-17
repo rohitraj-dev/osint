@@ -1,6 +1,6 @@
 import { CircleMarker, Popup } from 'react-leaflet';
 
-const AnomalyLayer = ({ anomalies, aircraft, vessels }) => {
+const AnomalyLayer = ({ anomalies, aircraft, vessels, onSelectAnomaly }) => {
   return (
     <>
       {anomalies.map((anomaly, index) => {
@@ -21,6 +21,14 @@ const AnomalyLayer = ({ anomalies, aircraft, vessels }) => {
             radius={10}
             pathOptions={{ color: color, fillColor: color, fillOpacity: 0.6 }}
             className="anomaly-pulse"
+            eventHandlers={{
+              click: () => onSelectAnomaly({
+                ...anomaly,
+                callsign: isAircraft ? (asset?.callsign || anomaly.icao) : (asset?.name || anomaly.mmsi),
+                zone: asset?.zoneName || 'Unknown Zone',
+                score: anomaly.anomaly_score
+              })
+            }}
           >
             <Popup>
               <div>

@@ -11,9 +11,8 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/backend/, ''),
       },
       '/api/opensky': {
-        target: 'https://opensky-network.org',
+        target: 'https://osint-23z6.onrender.com',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/opensky/, '/api'),
       },
     },
   },

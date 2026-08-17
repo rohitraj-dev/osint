@@ -5,6 +5,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo import MongoClient
@@ -130,6 +131,16 @@ async def get_anomalies():
         doc['_id'] = str(doc['_id'])
 
     return documents
+
+
+@app.get('/api/opensky/states/all')
+async def proxy_opensky(lamin: float, lomin: float, lamax: float, lomax: float):
+    import httpx
+    url = 'https://opensky-network.org/api/states/all'
+    params = {'lamin': lamin, 'lomin': lomin, 'lamax': lamax, 'lomax': lomax}
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await client.get(url, params=params)
+        return JSONResponse(content=r.json(), status_code=r.status_code)
 
 
 if __name__ == '__main__':

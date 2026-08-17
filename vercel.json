@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/api/backend/(.*)", "destination": "https://osint-23z6.onrender.com/$1" },
+    { "source": "/api/opensky/:path*", "destination": "https://osint-23z6.onrender.com/api/opensky/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

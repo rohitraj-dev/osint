@@ -13,6 +13,7 @@ import TimelineControls from './TimelineControls.jsx'
 import { useOpenSkyStates } from '../hooks/useOpenSkyStates.js'
 import { useAISStream } from '../hooks/useAISStream.js'
 import { useHistorySnapshot } from '../hooks/useHistorySnapshot.js'
+import { useHistoryData } from '../hooks/useHistoryData.js'
 import { checkProximity } from '../utils/proximityCheck.js'
 
 function MapView() {
@@ -22,6 +23,49 @@ function MapView() {
   const [geminiOpen, setGeminiOpen] = useState(false)
   const [zones, setZones] = useState(null)
   
+  const [selectedAnomaly, setSelectedAnomaly] = useState(null)
+  const [analysisText, setAnalysisText] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [playbackSpeed, setPlaybackSpeed] = useState(1)
+  const { earliest, latest, loading, usingMock } = useHistoryData()
+  const [currentTime, setCurrentTime] = useState(null)
+
+  useEffect(() => {
+    if (earliest && !currentTime) {
+      setCurrentTime(new Date(earliest))
+    }
+  }, [earliest, currentTime])
+
+  useEffect(() => {
+    if (!isPlaying || !currentTime || !latest) return
+
+    const interval = setInterval(() => {
+      setCurrentTime(prev => {
+        const next = new Date(prev.getTime() + 1000 * playbackSpeed)
+        if (next > new Date(latest)) {
+          setIsPlaying(false)
+          return prev
+        }
+        return next
+      })
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [isPlaying, latest, playbackSpeed, currentTime])
+
+  const handleTimeChange = (newTime) => {
+    setCurrentTime(newTime)
+    setHistoryTs(newTime.toISOString())
+  }
+
+  useEffect(() => {
+    if (currentTime) {
+      setHistoryTs(currentTime.toISOString())
+    }
+  }, [currentTime])
+
   const handleToggleLayer = (layer, value) => setLayerStates(prev => ({ ...prev, [layer]: value }))
   
   // For live counts
@@ -44,6 +88,45 @@ function MapView() {
       console.error('Error fetching anomalies:', error)
     }
   }
+
+  const handleAnalyse = async () => {
+    if (!selectedAnomaly) return;
+    setIsLoading(true);
+    setAnalysisText(null);
+
+    const apiKey = import.meta.env.VITE_GEMINI_KEY;
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
+
+    const prompt = `You are an OSINT domain awareness analyst. Analyze this anomaly: ${JSON.stringify(selectedAnomaly, null, 2)}. 
+    Asset types: ${selectedAnomaly.type}, location: ${selectedAnomaly.lat}, ${selectedAnomaly.lon}.
+    Provide a concise analysis including Risk Level and Recommendation.`;
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-goog-api-key': apiKey,
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: prompt
+            }]
+          }]
+        })
+      });
+
+      if (!response.ok) throw new Error(`API error: ${response.statusText}`);
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No summary available.';
+      setAnalysisText(text);
+    } catch (err) {
+      setAnalysisText(`Failed to analyze: ${err.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetch('/sensitive-zones.geojson')
@@ -156,18 +239,40 @@ function MapView() {
               <>
                 {layerStates.aircraft && <AircraftLayer zones={zones} />}
                 {layerStates.vessels && <ShipLayer zones={zones} />}
-                {layerStates.anomalies && <AnomalyLayer anomalies={anomalies} aircraft={enrichedAircraft} vessels={enrichedVessels} />}
+                {layerStates.anomalies && (
+                  <AnomalyLayer 
+                    anomalies={anomalies} 
+                    aircraft={enrichedAircraft} 
+                    vessels={enrichedVessels} 
+                    onSelectAnomaly={(a) => {
+                      setSelectedAnomaly(a);
+                      setGeminiOpen(true);
+                    }}
+                  />
+                )}
                 {layerStates.zones && <ZoneLayer />}
               </>
             )}
           </MapContainer>
         </div>
       </div>
-      <TimelineControls onTimestampChange={setHistoryTs} />
+      <TimelineControls 
+        isLive={!usingMock}
+        currentTime={currentTime}
+        onTimeChange={handleTimeChange}
+        isPlaying={isPlaying}
+        onPlayPause={() => setIsPlaying(!isPlaying)}
+        playbackSpeed={playbackSpeed}
+        onSpeedChange={setPlaybackSpeed}
+        earliest={earliest}
+        latest={latest}
+        isLoading={loading}
+      />
       <GeminiPanel
-        anomalies={anomalies}
-        aircraft={enrichedAircraft}
-        vessels={enrichedVessels}
+        selectedAnomaly={selectedAnomaly}
+        onAnalyse={handleAnalyse}
+        analysisText={analysisText}
+        isLoading={isLoading}
         isOpen={geminiOpen}
         onClose={() => setGeminiOpen(false)}
       />
