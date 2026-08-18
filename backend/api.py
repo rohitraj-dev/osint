@@ -135,25 +135,61 @@ async def get_anomalies():
     return documents
 
 
-@app.get('/api/opensky/states/all')
-async def proxy_opensky(lamin: float, lomin: float, lamax: float, lomax: float):
+@app.get('/api/aircraft/live')
+async def proxy_aircraft_live():
     import httpx
-    url = 'https://opensky-network.org/api/states/all'
-    params = {'lamin': lamin, 'lomin': lomin, 'lamax': lamax, 'lomax': lomax}
-    auth = (OPENSKY_USERNAME, OPENSKY_PASSWORD) if OPENSKY_USERNAME and OPENSKY_PASSWORD else None
-    try:
-        async with httpx.AsyncClient(timeout=30, auth=auth) as client:
-            r = await client.get(url, params=params)
+    import asyncio
+    
+    regions = [
+        (51, 0),     # Europe
+        (40, -100),  # North America
+        (35, 135),   # East Asia
+        (-25, 130),  # Australia
+        (25, 55),    # Middle East
+        (20, 80),    # South Asia
+    ]
+    
+    headers = {
+        'Access-Control-Allow-Origin': 'https://osint-murex-three.vercel.app',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': '*',
+    }
+
+    async def fetch_region(client, lat, lon):
+        url = f'https://api.adsb.lol/v2/lat/{lat}/lon/{lon}/dist/500'
+        try:
+            r = await client.get(url, timeout=5.0)
             if r.status_code == 200:
-                return JSONResponse(content=r.json(), status_code=200)
-            else:
-                return JSONResponse(content={'states': [], 'error': f'OpenSky returned {r.status_code}'}, status_code=200)
-    except httpx.ConnectTimeout:
-        return JSONResponse(content={'states': [], 'error': 'OpenSky connection timed out'}, status_code=200)
-    except httpx.TimeoutException:
-        return JSONResponse(content={'states': [], 'error': 'OpenSky request timed out'}, status_code=200)
+                data = r.json()
+                return data.get('ac', [])
+        except Exception:
+            pass
+        return []
+
+    try:
+        async with httpx.AsyncClient() as client:
+            tasks = [fetch_region(client, lat, lon) for lat, lon in regions]
+            results = await asyncio.gather(*tasks)
+            
+            # Merge and deduplicate by 'hex'
+            merged_ac = {}
+            for ac_list in results:
+                for ac in ac_list:
+                    icao = ac.get('hex')
+                    if icao and icao not in merged_ac:
+                        merged_ac[icao] = ac
+            
+            return JSONResponse(
+                content={'ac': list(merged_ac.values())},
+                status_code=200,
+                headers=headers
+            )
     except Exception as e:
-        return JSONResponse(content={'states': [], 'error': str(e)}, status_code=200)
+        return JSONResponse(
+            content={'ac': [], 'error': str(e)},
+            status_code=200,
+            headers=headers
+        )
 
 
 if __name__ == '__main__':

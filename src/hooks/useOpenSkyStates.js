@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-const POLL_INTERVAL_MS = 20000
+const POLL_INTERVAL_MS = 15000
 
 function mapAircraftState(ac) {
   if (ac.lon == null || ac.lat == null) {
@@ -22,7 +22,7 @@ function mapAircraftState(ac) {
   }
 }
 
-export function useOpenSkyStates(bounds) {
+export function useOpenSkyStates() {
   const [aircraft, setAircraft] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -30,13 +30,6 @@ export function useOpenSkyStates(bounds) {
   const abortRef = useRef(null)
 
   useEffect(() => {
-    if (!bounds) {
-      setAircraft([])
-      setLoading(false)
-      setError(null)
-      return undefined
-    }
-
     let isActive = true
 
     const fetchStates = async () => {
@@ -45,11 +38,7 @@ export function useOpenSkyStates(bounds) {
       abortRef.current = controller
       setLoading(true)
 
-      const lat = ((bounds.getNorth() + bounds.getSouth()) / 2).toFixed(4)
-      const lon = ((bounds.getEast() + bounds.getWest()) / 2).toFixed(4)
-      const dist = 250 // nautical miles, max allowed is 250
-
-      const url = `https://api.adsb.lol/v2/lat/${lat}/lon/${lon}/dist/${dist}`
+      const url = 'https://osint-23z6.onrender.com/api/aircraft/live'
 
       try {
         const response = await fetch(url, { signal: controller.signal })
@@ -95,7 +84,7 @@ export function useOpenSkyStates(bounds) {
       abortRef.current?.abort()
       clearInterval(intervalId)
     }
-  }, [bounds])
+  }, [])
 
   return { aircraft, loading, error, lastUpdated }
 }
