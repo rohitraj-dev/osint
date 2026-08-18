@@ -53,7 +53,7 @@ function AircraftLayer({ zones }) {
   const map = useMap()
   const [bounds, setBounds] = useState(() => map.getBounds())
   const [now, setNow] = useState(Date.now())
-  const { aircraft: rawAircraft, loading, error, lastUpdated } = useOpenSkyStates(bounds)
+  const { aircraft: rawAircraft, loading, error, lastUpdated } = useOpenSkyStates()
 
   const aircraft = useMemo(() => {
     if (!rawAircraft || !zones) return rawAircraft
