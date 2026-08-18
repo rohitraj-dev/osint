@@ -57,6 +57,7 @@ export function useOpenSkyStates() {
         }
 
         setAircraft(nextAircraft)
+        console.log('[OSINT] aircraft loaded:', nextAircraft.length, nextAircraft[0])
         setError(null)
         setLastUpdated(new Date())
       } catch (fetchError) {
