@@ -69,6 +69,33 @@ def to_iso(value: datetime | None) -> str | None:
     return value.astimezone(timezone.utc).isoformat()
 
 
+def aircraft_history_document(document):
+    alt = document.get('alt_baro', document.get('alt'))
+    if alt == 'ground':
+        alt = 0
+
+    return {
+        'icao24': document.get('hex', document.get('icao24')),
+        'lat': document.get('lat'),
+        'lon': document.get('lon'),
+        'alt': alt,
+        'velocity': document.get('gs', document.get('velocity')),
+        'track': document.get('track'),
+        'timestamp': to_iso(document.get('timestamp')),
+    }
+
+
+def vessel_history_document(document):
+    return {
+        'mmsi': document.get('mmsi'),
+        'lat': document.get('lat'),
+        'lon': document.get('lon'),
+        'speed': document.get('sog', document.get('speed')),
+        'course': document.get('cog', document.get('course')),
+        'timestamp': to_iso(document.get('timestamp')),
+    }
+
+
 async def fetch_history(collection, ts: str, limit: int, fields: dict):
     center = parse_iso_timestamp(ts)
     start = center - TIME_WINDOW
@@ -78,9 +105,6 @@ async def fetch_history(collection, ts: str, limit: int, fields: dict):
         fields,
     ).sort('timestamp', 1).limit(limit)
     documents = await cursor.to_list(length=limit)
-    for doc in documents:
-        doc.pop('_id', None)
-        doc['timestamp'] = to_iso(doc.get('timestamp'))
     return documents
 
 
@@ -95,18 +119,42 @@ async def get_collection_bounds(collection):
 
 @app.get('/history/aircraft')
 async def get_aircraft_history(ts: str = Query(...)):
-    return await fetch_history(
+    documents = await fetch_history(
         app.state.aircraft_collection, ts, 2000,
-        {'_id': 0, 'icao24': 1, 'lat': 1, 'lon': 1, 'alt': 1, 'velocity': 1, 'track': 1, 'timestamp': 1},
+        {
+            '_id': 0,
+            'hex': 1,
+            'icao24': 1,
+            'lat': 1,
+            'lon': 1,
+            'alt_baro': 1,
+            'alt': 1,
+            'gs': 1,
+            'velocity': 1,
+            'track': 1,
+            'timestamp': 1,
+        },
     )
+    return [aircraft_history_document(document) for document in documents]
 
 
 @app.get('/history/vessels')
 async def get_vessel_history(ts: str = Query(...)):
-    return await fetch_history(
+    documents = await fetch_history(
         app.state.vessel_collection, ts, 1000,
-        {'_id': 0, 'mmsi': 1, 'lat': 1, 'lon': 1, 'speed': 1, 'course': 1, 'timestamp': 1},
+        {
+            '_id': 0,
+            'mmsi': 1,
+            'lat': 1,
+            'lon': 1,
+            'sog': 1,
+            'cog': 1,
+            'speed': 1,
+            'course': 1,
+            'timestamp': 1,
+        },
     )
+    return [vessel_history_document(document) for document in documents]
 
 
 @app.get('/history/range')

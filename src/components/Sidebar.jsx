@@ -1,6 +1,13 @@
 import React from 'react';
 
-const Sidebar = ({ layerStates, onToggleLayer }) => {
+const Sidebar = ({ 
+  layerStates, 
+  onToggleLayer,
+  altitudeRange = [0, 45000],
+  onAltitudeChange,
+  speedRange = [0, 50],
+  onSpeedChange
+}) => {
   const sidebarStyle = {
     width: '100%',
     height: '100%',
@@ -136,17 +143,33 @@ const Sidebar = ({ layerStates, onToggleLayer }) => {
         <div style={sliderContainerStyle}>
           <div style={sliderLabelStyle}>
             <span>Altitude Range</span>
-            <span style={{ color: 'var(--text-sec)' }}>0–45k ft</span>
+            <span style={{ color: 'var(--text-sec)' }}>0–{altitudeRange[1]} ft</span>
           </div>
-          <input type="range" min="0" max="45000" defaultValue="45000" style={sliderStyle} />
+          <input 
+            type="range" 
+            min="0" 
+            max="45000" 
+            step="500"
+            value={altitudeRange[1]} 
+            onChange={(e) => onAltitudeChange?.([0, parseInt(e.target.value)])}
+            style={sliderStyle} 
+          />
         </div>
 
         <div style={sliderContainerStyle}>
           <div style={sliderLabelStyle}>
             <span>Speed Range</span>
-            <span style={{ color: 'var(--text-sec)' }}>0–50 kn</span>
+            <span style={{ color: 'var(--text-sec)' }}>0–{speedRange[1]} kn</span>
           </div>
-          <input type="range" min="0" max="50" defaultValue="50" style={sliderStyle} />
+          <input 
+            type="range" 
+            min="0" 
+            max="500" 
+            step="10"
+            value={speedRange[1]} 
+            onChange={(e) => onSpeedChange?.([0, parseInt(e.target.value)])}
+            style={sliderStyle} 
+          />
         </div>
       </div>
     </aside>

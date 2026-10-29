@@ -27,15 +27,22 @@ function MapView() {
   const [analysisText, setAnalysisText] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
 
+  const [altitudeRange, setAltitudeRange] = useState([0, 45000])
+  const [speedRange, setSpeedRange] = useState([0, 500])
+
   const [isPlaying, setIsPlaying] = useState(false)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const { earliest, latest, loading, usingMock } = useHistoryData()
   const [currentTime, setCurrentTime] = useState(null)
 
   useEffect(() => {
+    // Initializing currentTime to earliest on mount causes historyTs to be non-null,
+    // which breaks live mode (AircraftLayer). Removed to allow live mode by default.
+    /*
     if (earliest && !currentTime) {
       setCurrentTime(new Date(earliest))
     }
+    */
   }, [earliest, currentTime])
 
   useEffect(() => {
@@ -55,16 +62,27 @@ function MapView() {
     return () => clearInterval(interval)
   }, [isPlaying, latest, playbackSpeed, currentTime])
 
+  // Update historyTs when playback updates currentTime
+  useEffect(() => {
+    if (isPlaying && currentTime) {
+      setHistoryTs(currentTime.toISOString())
+    }
+  }, [isPlaying, currentTime])
+
   const handleTimeChange = (newTime) => {
     setCurrentTime(newTime)
-    setHistoryTs(newTime.toISOString())
+    setHistoryTs(newTime ? newTime.toISOString() : null)
   }
 
+  // Remove the automatic useEffect that sets historyTs whenever currentTime changes.
+  // Instead, historyTs should only be updated when the user explicitly interacts with the timeline.
+  /*
   useEffect(() => {
     if (currentTime) {
       setHistoryTs(currentTime.toISOString())
     }
   }, [currentTime])
+  */
 
   const handleToggleLayer = (layer, value) => setLayerStates(prev => ({ ...prev, [layer]: value }))
   
@@ -75,7 +93,7 @@ function MapView() {
   const { aircraft, vessels } = useHistorySnapshot(historyTs)
 
   const aircraftCount = historyTs ? aircraft.length : liveAircraft.length
-  const vesselCount = historyTs ? vessels.length : (liveVessels.size || 0)
+  const vesselCount = historyTs ? vessels.length : (liveVessels?.length || liveVessels?.size || 0)
 
   const fetchAnomalies = async () => {
     try {
@@ -165,6 +183,10 @@ function MapView() {
           <Sidebar 
             layerStates={layerStates}
             onToggleLayer={handleToggleLayer}
+            altitudeRange={altitudeRange}
+            onAltitudeChange={setAltitudeRange}
+            speedRange={speedRange}
+            onSpeedChange={setSpeedRange}
           />
         </div>
         <div style={{ flex: 1, height: '100%', position: 'relative' }}>
@@ -234,10 +256,21 @@ function MapView() {
               />
             ) : null}
             {historyTs ? (
-              <HistoryLayer aircraft={enrichedAircraft} vessels={enrichedVessels} />
+              <HistoryLayer 
+                aircraft={enrichedAircraft} 
+                vessels={enrichedVessels} 
+                altitudeRange={altitudeRange}
+                speedRange={speedRange}
+              />
             ) : (
               <>
-                {layerStates.aircraft && <AircraftLayer zones={zones} />}
+                {layerStates.aircraft && (
+                  <AircraftLayer 
+                    zones={zones} 
+                    altitudeRange={altitudeRange}
+                    speedRange={speedRange}
+                  />
+                )}
                 {layerStates.vessels && <ShipLayer zones={zones} />}
                 {layerStates.anomalies && (
                   <AnomalyLayer 

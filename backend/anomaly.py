@@ -39,6 +39,22 @@ def load_records(collection, start_time, projection):
   )
 
 
+def normalize_aircraft_record(record):
+  return {
+    **record,
+    'icao24': record.get('hex', record.get('icao24')),
+    'velocity': record.get('gs', record.get('velocity')),
+  }
+
+
+def normalize_vessel_record(record):
+  return {
+    **record,
+    'speed': record.get('sog', record.get('speed')),
+    'course': record.get('cog', record.get('course')),
+  }
+
+
 def detect_anomalies(records, asset_type, id_field, speed_field):
   if len(records) < 10:
     return []
@@ -120,10 +136,13 @@ def main():
       start_time,
       {
         '_id': 0,
+        'hex': 1,
         'icao24': 1,
         'lat': 1,
         'lon': 1,
+        'alt_baro': 1,
         'alt': 1,
+        'gs': 1,
         'velocity': 1,
         'track': 1,
         'timestamp': 1,
@@ -137,14 +156,26 @@ def main():
         'mmsi': 1,
         'lat': 1,
         'lon': 1,
+        'sog': 1,
+        'cog': 1,
         'speed': 1,
         'course': 1,
         'timestamp': 1,
       },
     )
 
-    aircraft_anomalies = detect_anomalies(aircraft_records, 'aircraft', 'icao24', 'velocity')
-    vessel_anomalies = detect_anomalies(vessel_records, 'vessel', 'mmsi', 'speed')
+    aircraft_anomalies = detect_anomalies(
+      [normalize_aircraft_record(record) for record in aircraft_records],
+      'aircraft',
+      'icao24',
+      'velocity',
+    )
+    vessel_anomalies = detect_anomalies(
+      [normalize_vessel_record(record) for record in vessel_records],
+      'vessel',
+      'mmsi',
+      'speed',
+    )
 
     anomaly_collection.delete_many({})
     all_anomalies = aircraft_anomalies + vessel_anomalies

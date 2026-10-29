@@ -1,9 +1,29 @@
 import { CircleMarker, Popup } from 'react-leaflet'
 
-function HistoryLayer({ aircraft, vessels }) {
+function HistoryLayer({ aircraft, vessels, altitudeRange, speedRange }) {
+  const filteredAircraft = (aircraft || []).filter(plane => {
+    // Altitude filter
+    if (altitudeRange) {
+      const alt = plane.alt; // Mock data uses 'alt'
+      if (alt !== null && alt !== undefined) {
+        if (alt < altitudeRange[0] || alt > altitudeRange[1]) return false;
+      }
+    }
+
+    // Speed filter
+    if (speedRange) {
+      const speed = plane.velocity;
+      if (speed !== null && speed !== undefined) {
+        if (speed < speedRange[0] || speed > speedRange[1]) return false;
+      }
+    }
+
+    return true;
+  });
+
   return (
     <>
-      {aircraft.map((plane) => (
+      {filteredAircraft.map((plane) => (
         <CircleMarker
           key={`history-aircraft-${plane.icao24}-${plane.timestamp}`}
           center={[plane.lat, plane.lon]}

@@ -49,17 +49,49 @@ function AircraftBoundsTracker({ onBoundsChange }) {
   return null
 }
 
-function AircraftLayer({ zones }) {
+function AircraftLayer({ zones, altitudeRange, speedRange }) {
   const map = useMap()
   const [bounds, setBounds] = useState(() => map.getBounds())
   const [now, setNow] = useState(Date.now())
   const { aircraft: rawAircraft, loading, error, lastUpdated } = useOpenSkyStates()
 
   const aircraft = useMemo(() => {
-    if (!rawAircraft || !zones) return rawAircraft
-    const mapped = rawAircraft.map(a => ({ ...a, lat: a.latitude, lon: a.longitude }))
-    return checkProximity(mapped, zones)
-  }, [rawAircraft, zones])
+    if (!rawAircraft) return []
+    
+    // 1. Proximity enrichment
+    let processed = rawAircraft;
+    if (zones) {
+      const mapped = rawAircraft.map(a => ({ ...a, lat: a.latitude, lon: a.longitude }))
+      processed = checkProximity(mapped, zones)
+    }
+
+    // 2. Filtering
+    return processed.filter(plane => {
+      // Altitude filter
+      if (altitudeRange) {
+        const alt = plane.baroAltitude ?? plane.geoAltitude;
+        if (alt !== null && alt !== undefined) {
+          // Convert meters to feet for comparison if sliders are in feet
+          // The issue description says "altitude range sliders (UI already built, values already in state)"
+          // Sidebar UI showed "0–45k ft". OpenSky data is usually in meters.
+          const altFeet = alt * 3.28084;
+          if (altFeet < altitudeRange[0] || altFeet > altitudeRange[1]) return false;
+        }
+      }
+
+      // Speed filter
+      if (speedRange) {
+        const speed = plane.velocity; // velocity is in m/s from OpenSky mapping
+        if (speed !== null && speed !== undefined) {
+          // Convert m/s to knots
+          const speedKnots = speed * 1.94384;
+          if (speedKnots < speedRange[0] || speedKnots > speedRange[1]) return false;
+        }
+      }
+
+      return true;
+    });
+  }, [rawAircraft, zones, altitudeRange, speedRange])
 
   useEffect(() => {
     setBounds(map.getBounds())

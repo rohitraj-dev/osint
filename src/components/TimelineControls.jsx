@@ -29,8 +29,8 @@ const TimelineControls = ({
   const startTime = earliest ? new Date(earliest).getTime() : 0
   const endTime = latest ? new Date(latest).getTime() : 0
   const totalDuration = endTime - startTime
-  const currentMs = currentTime ? new Date(currentTime).getTime() : startTime
-  const progress = totalDuration > 0 ? (currentMs - startTime) / totalDuration : 0
+  const currentMs = currentTime ? new Date(currentTime).getTime() : 0
+  const progress = (totalDuration > 0 && currentMs > 0) ? (currentMs - startTime) / totalDuration : 0
 
   const handleScrubberClick = (e) => {
     if (isLoading || !totalDuration) return
@@ -213,22 +213,27 @@ const TimelineControls = ({
       </div>
 
       {/* Data Mode Badge */}
-      <div style={{
-        backgroundColor: 'var(--surface-el)',
-        borderRadius: '5px',
-        padding: '3px 10px',
-        height: '26px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0
-      }}>
+      <div 
+        onClick={() => onTimeChange(null)}
+        style={{
+          backgroundColor: 'var(--surface-el)',
+          borderRadius: '5px',
+          padding: '3px 10px',
+          height: '26px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          cursor: 'pointer',
+          border: !currentTime ? '1px solid var(--accent)' : '1px solid transparent'
+        }}
+      >
         <span style={{
           fontSize: '10px',
-          color: 'var(--text-dim)',
-          fontWeight: 500
+          color: !currentTime ? 'var(--accent)' : 'var(--text-dim)',
+          fontWeight: 600
         }}>
-          {isLive ? 'Live' : 'Mock Data'}
+          {isLive ? 'LIVE' : 'MOCK DATA'}
         </span>
       </div>
     </div>
