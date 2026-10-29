@@ -143,7 +143,6 @@ def ensure_indexes(database):
       name='timestamp_ttl',
       expireAfterSeconds=TTL_SECONDS,
     )
-    collection.create_index([('timestamp', 1)], name='timestamp_idx')
 
 
 def insert_documents(database, aircraft_documents, vessel_documents):
