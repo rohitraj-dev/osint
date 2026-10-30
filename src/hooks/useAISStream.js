@@ -66,9 +66,12 @@ export function useAISStream(bounds) {
         )
       }
 
-      socket.onmessage = (event) => {
+      socket.onmessage = async (event) => {
         try {
-          const msg = JSON.parse(event.data)
+          const text = event.data instanceof Blob
+            ? await event.data.text()
+            : event.data
+          const msg = JSON.parse(text)
           const positionReport = msg.Message?.PositionReport
 
           if (!hasLoggedFirst.current) {
@@ -107,11 +110,7 @@ export function useAISStream(bounds) {
 
           while (nextVessels.size > MAX_VESSELS) {
             const oldestKey = nextVessels.keys().next().value
-
-            if (oldestKey == null) {
-              break
-            }
-
+            if (oldestKey == null) break
             nextVessels.delete(oldestKey)
           }
 
