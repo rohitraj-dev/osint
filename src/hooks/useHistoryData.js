@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 const REQUEST_TIMEOUT_MS = 3000
-const HISTORY_RANGE_URL = 'http://localhost:8000/history/range'
+const HISTORY_RANGE_URL = 'https://osint-23z6.onrender.com/history/range'
 
 function fetchWithTimeout(url, options = {}) {
   const controller = new AbortController()
