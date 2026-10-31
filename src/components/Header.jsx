@@ -1,6 +1,20 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 
-const Header = ({ aircraftCount, vesselCount, anomalyCount }) => {
+const Header = ({ aircraftCount, vesselCount, anomalyCount, aircraftLastUpdated }) => {
+  const [now, setNow] = useState(null);
+
+  useEffect(() => {
+    const timerId = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, []);
+
+  const updatedText = aircraftLastUpdated && now
+    ? `Updated ${Math.max(0, Math.floor((now - aircraftLastUpdated.getTime()) / 1000))}s ago`
+    : 'Updated —';
+
   const headerStyle = {
     width: '100%',
     height: '56px',
@@ -82,6 +96,12 @@ const Header = ({ aircraftCount, vesselCount, anomalyCount }) => {
     marginTop: '2px',
   };
 
+  const chipSubtitleStyle = {
+    fontSize: '9px',
+    color: 'var(--text-dim)',
+    marginTop: '3px',
+  };
+
   return (
     <header style={headerStyle}>
       <div style={leftSectionStyle}>
@@ -98,6 +118,7 @@ const Header = ({ aircraftCount, vesselCount, anomalyCount }) => {
         <div style={chipStyle}>
           <span style={chipNumberStyle('var(--accent)')}>{aircraftCount}</span>
           <span style={chipLabelStyle}>Aircraft</span>
+          <span style={chipSubtitleStyle}>{updatedText}</span>
         </div>
         <div style={chipStyle}>
           <span style={chipNumberStyle('var(--ok)')}>{vesselCount}</span>

@@ -87,7 +87,7 @@ function MapView() {
   const handleToggleLayer = (layer, value) => setLayerStates(prev => ({ ...prev, [layer]: value }))
   
   // For live counts
-  const { aircraft: liveAircraft } = useOpenSkyStates({ getSouth: () => -90, getWest: () => -180, getNorth: () => 90, getEast: () => 180 })
+  const { aircraft: liveAircraft, lastUpdated: aircraftLastUpdated } = useOpenSkyStates({ getSouth: () => -90, getWest: () => -180, getNorth: () => 90, getEast: () => 180 })
   const { vessels: liveVessels } = useAISStream({ getSouth: () => -90, getWest: () => -180, getNorth: () => 90, getEast: () => 180 })
   
   const { aircraft, vessels } = useHistorySnapshot(historyTs)
@@ -177,6 +177,7 @@ function MapView() {
         aircraftCount={aircraftCount}
         vesselCount={vesselCount}
         anomalyCount={anomalies.length}
+        aircraftLastUpdated={aircraftLastUpdated}
       />
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden', minHeight: 0 }}>
         <div style={{ width: '260px', minWidth: '260px', flexShrink: 0, height: '100%', overflowY: 'auto', background: 'var(--surface)', borderRight: '1px solid var(--border)' }}>
