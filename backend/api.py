@@ -16,7 +16,7 @@ DATABASE_NAME = 'osint_db'
 AIRCRAFT_COLLECTION = 'aircraft_states'
 VESSEL_COLLECTION = 'vessel_states'
 ANOMALY_COLLECTION = 'anomalies'
-TIME_WINDOW = timedelta(hours=2)
+TIME_WINDOW = timedelta(minutes=5)
 
 load_dotenv(ENV_PATH)
 MONGO_URI = os.getenv('MONGO_URI')
@@ -98,8 +98,25 @@ def vessel_history_document(document):
 
 async def fetch_history(collection, ts: str, limit: int, fields: dict):
     center = parse_iso_timestamp(ts)
-    start = center - TIME_WINDOW
-    end = center + TIME_WINDOW
+    latest_before = await collection.find_one(
+        {'timestamp': {'$lte': center}},
+        projection={'_id': 0, 'timestamp': 1},
+        sort=[('timestamp', -1)],
+    )
+    earliest_after = await collection.find_one(
+        {'timestamp': {'$gte': center}},
+        projection={'_id': 0, 'timestamp': 1},
+        sort=[('timestamp', 1)],
+    )
+
+    if latest_before is None and earliest_after is None:
+        return []
+
+    candidates = [document for document in (latest_before, earliest_after) if document is not None]
+    snapshot = min(candidates, key=lambda document: abs(document['timestamp'] - center))
+    snapshot_timestamp = snapshot['timestamp']
+    start = snapshot_timestamp - TIME_WINDOW
+    end = snapshot_timestamp + TIME_WINDOW
     cursor = collection.find(
         {'timestamp': {'$gte': start, '$lte': end}},
         fields,
