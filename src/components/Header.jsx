@@ -65,7 +65,8 @@ const Header = ({ aircraftCount, vesselCount, anomalyCount, aircraftLastUpdated 
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: '12px',
-    minWidth: '330px',
+    minWidth: 0,
+    flex: '1 1 auto',
     marginLeft: '20px',
   };
 
@@ -75,7 +76,7 @@ const Header = ({ aircraftCount, vesselCount, anomalyCount, aircraftLastUpdated 
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 0,
+    minWidth: '80px',
     padding: '6px 10px',
     border: '1px solid var(--border)',
     borderRadius: '6px',
