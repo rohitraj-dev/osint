@@ -32,7 +32,7 @@ function MapView() {
 
   const [isPlaying, setIsPlaying] = useState(false)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
-  const { earliest, latest, loading, usingMock } = useHistoryData()
+  const { earliest, latest, loading, usingMock: historyRangeUsingMock } = useHistoryData()
   const [currentTime, setCurrentTime] = useState(null)
 
   useEffect(() => {
@@ -90,7 +90,7 @@ function MapView() {
   const { aircraft: liveAircraft, lastUpdated: aircraftLastUpdated } = useOpenSkyStates({ getSouth: () => -90, getWest: () => -180, getNorth: () => 90, getEast: () => 180 })
   const { vessels: liveVessels } = useAISStream({ getSouth: () => -90, getWest: () => -180, getNorth: () => 90, getEast: () => 180 })
   
-  const { aircraft, vessels } = useHistorySnapshot(historyTs)
+  const { aircraft, vessels, usingMock: snapshotUsingMock } = useHistorySnapshot(historyTs)
 
   const aircraftCount = historyTs ? aircraft.length : liveAircraft.length
   const vesselCount = historyTs ? vessels.length : (liveVessels?.length || liveVessels?.size || 0)
@@ -291,7 +291,8 @@ function MapView() {
         </div>
       </div>
       <TimelineControls 
-        isLive={!usingMock}
+        isLive={!historyRangeUsingMock}
+        usingMock={snapshotUsingMock}
         currentTime={currentTime}
         onTimeChange={handleTimeChange}
         isPlaying={isPlaying}

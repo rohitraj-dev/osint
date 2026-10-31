@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const REQUEST_TIMEOUT_MS = 3000
+const REQUEST_TIMEOUT_MS = 15000
 
 function fetchWithTimeout(url, options = {}) {
   const controller = new AbortController()

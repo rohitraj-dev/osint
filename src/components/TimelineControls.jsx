@@ -22,7 +22,8 @@ const TimelineControls = ({
   onSpeedChange,
   earliest,
   latest,
-  isLoading
+  isLoading,
+  usingMock
 }) => {
   const scrubberRef = useRef(null)
 
@@ -230,10 +231,14 @@ const TimelineControls = ({
       >
         <span style={{
           fontSize: '10px',
-          color: !currentTime ? 'var(--accent)' : 'var(--text-dim)',
+          color: !isLive && !usingMock
+            ? 'var(--ok)'
+            : !currentTime
+              ? 'var(--accent)'
+              : 'var(--text-dim)',
           fontWeight: 600
         }}>
-          {isLive ? 'LIVE' : 'MOCK DATA'}
+          {isLive ? 'LIVE' : usingMock ? 'MOCK DATA' : 'HISTORY'}
         </span>
       </div>
     </div>
