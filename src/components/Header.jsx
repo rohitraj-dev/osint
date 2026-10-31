@@ -4,6 +4,7 @@ const Header = ({ aircraftCount, vesselCount, anomalyCount }) => {
   const headerStyle = {
     width: '100%',
     height: '56px',
+    boxSizing: 'border-box',
     flexShrink: 0,
     backgroundColor: 'var(--surface)',
     borderBottom: '1px solid var(--border)',
@@ -48,13 +49,23 @@ const Header = ({ aircraftCount, vesselCount, anomalyCount }) => {
   const rightSectionStyle = {
     display: 'flex',
     alignItems: 'center',
-    gap: '24px',
+    justifyContent: 'space-between',
+    gap: '12px',
+    minWidth: '330px',
+    marginLeft: '20px',
   };
 
   const chipStyle = {
     display: 'flex',
+    flex: '1 1 0',
     flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 0,
+    padding: '6px 10px',
+    border: '1px solid var(--border)',
+    borderRadius: '6px',
+    backgroundColor: 'var(--bg)',
   };
 
   const chipNumberStyle = (color) => ({
