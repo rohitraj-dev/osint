@@ -16,7 +16,7 @@ DATABASE_NAME = 'osint_db'
 AIRCRAFT_COLLECTION = 'aircraft_states'
 VESSEL_COLLECTION = 'vessel_states'
 ANOMALY_COLLECTION = 'anomalies'
-TIME_WINDOW = timedelta(minutes=5)
+TIME_WINDOW = timedelta(hours=2)
 
 load_dotenv(ENV_PATH)
 MONGO_URI = os.getenv('MONGO_URI')
