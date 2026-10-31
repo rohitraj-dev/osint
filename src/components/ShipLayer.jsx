@@ -53,6 +53,9 @@ function ShipBoundsTracker({ onBoundsChange }) {
 function ShipLayer({ zones }) {
   const map = useMap()
   const [bounds, setBounds] = useState(null)
+  useEffect(() => {
+    setBounds(map.getBounds())
+  }, [])
   const { vessels: rawVessels, connected, error } = useAISStream(bounds)
 
   const vessels = useMemo(() => {
