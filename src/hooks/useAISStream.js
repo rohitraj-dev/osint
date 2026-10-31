@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-const MAX_VESSELS = 500
+const MAX_VESSELS = 2000
 
 function trimName(name) {
   return name?.trim() ?? ''
