@@ -96,6 +96,12 @@ def vessel_history_document(document):
     }
 
 
+def to_utc_aware(value):
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
 async def fetch_history(collection, ts: str, limit: int, fields: dict):
     center = parse_iso_timestamp(ts)
     latest_before = await collection.find_one(
@@ -113,7 +119,7 @@ async def fetch_history(collection, ts: str, limit: int, fields: dict):
         return []
 
     candidates = [document for document in (latest_before, earliest_after) if document is not None]
-    snapshot = min(candidates, key=lambda document: abs(document['timestamp'] - center))
+    snapshot = min(candidates, key=lambda document: abs(to_utc_aware(document['timestamp']) - center))
     snapshot_timestamp = snapshot['timestamp']
     start = snapshot_timestamp - TIME_WINDOW
     end = snapshot_timestamp + TIME_WINDOW
