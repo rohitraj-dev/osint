@@ -6,3 +6,4 @@ python-dotenv
 websockets
 requests
 httpx
+motor>=3.3
