@@ -52,6 +52,7 @@ export function useAISStream(bounds) {
       }
 
         setConnected(true)
+        console.log('AISStream subscribing with bounds:', { south, west, north, east })
         socket.send(
           JSON.stringify({
             APIKey: apiKey,
